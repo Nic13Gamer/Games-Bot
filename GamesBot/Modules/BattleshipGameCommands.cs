@@ -11,9 +11,9 @@ namespace GamesBot.Modules
         public async Task PlayCommand([Summary("user")] IGuildUser mention)
         {
             var components = new ComponentBuilder()
-                .WithCallbackButton(() =>
+                .WithCallbackButton((user, hostUser) =>
                 {
-                    Terminal.WriteLine(mention.Nickname);
+                    Terminal.WriteLine(mention.Username);
                 }, "Accept");
 
             await mention.SendMessageAsync($"You have received a invite to play battleship from {Context.User.Mention}\nClick the button below to accept and start playing!",

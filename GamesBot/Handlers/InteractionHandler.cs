@@ -25,14 +25,14 @@ namespace GamesBot
             var pendingButtonCallback = pendingButtonCallbacks.Where(x => x.customId == arg.Data.CustomId).FirstOrDefault();
             if (pendingButtonCallback == default) return null;
 
-            pendingButtonCallback.callback?.Invoke();
+            pendingButtonCallback.callback?.Invoke(arg.User, pendingButtonCallback.param);
 
             pendingButtonCallbacks.Remove(pendingButtonCallback);
 
             return null;
         }
 
-        public static ComponentBuilder WithCallbackButton(this ComponentBuilder builder, Action callback, string label = null, ButtonStyle style = ButtonStyle.Primary, IEmote emote = null, string url = null, bool disabled = false, int row = 0, object callbackParam = null)
+        public static ComponentBuilder WithCallbackButton(this ComponentBuilder builder, Action<IUser, object> callback, string label = null, ButtonStyle style = ButtonStyle.Primary, IEmote emote = null, string url = null, bool disabled = false, int row = 0, object callbackParam = null)
         {
             string customId = "btn-" + StringUtils.Random(18);
 
@@ -44,14 +44,14 @@ namespace GamesBot
 
         class PendingButtonCallback
         {
-            public PendingButtonCallback(Action<object> callback, string customId, object param)
+            public PendingButtonCallback(Action<IUser, object> callback, string customId, object param)
             {
                 this.callback = callback;
                 this.customId = customId;
                 this.param = param;
             }
 
-            public Action callback;
+            public Action<IUser, object> callback;
             public string customId;
             public object param;
         }
