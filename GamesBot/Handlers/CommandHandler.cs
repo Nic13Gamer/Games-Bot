@@ -39,10 +39,9 @@ namespace GamesBot
         {
             var context = new SocketInteractionContext(client, arg);
             if (context.Interaction is not ISlashCommandInteraction) return null;
+            if (context.User.IsBot || context.Guild == null) return null;
 
             var command = interactionService.SearchSlashCommand(context.Interaction as ISlashCommandInteraction);
-
-            if (context.User.IsBot || context.Guild == null) return null;
 
             command.Command.ExecuteAsync(context, null);
 

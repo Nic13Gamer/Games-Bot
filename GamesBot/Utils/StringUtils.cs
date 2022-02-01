@@ -40,7 +40,7 @@ namespace GamesBot.Utils
             return output.Trim();
         }
 
-        public static string Random(int length = 12)
+        public static string RandomString(int length = 12)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             return new string(Enumerable.Repeat(chars, length)

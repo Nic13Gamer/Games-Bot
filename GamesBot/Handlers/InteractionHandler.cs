@@ -1,11 +1,10 @@
-﻿using GamesBot.Utils;
-
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
+using GamesBot.Utils;
 using System;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GamesBot
 {
@@ -25,35 +24,33 @@ namespace GamesBot
             var pendingButtonCallback = pendingButtonCallbacks.Where(x => x.customId == arg.Data.CustomId).FirstOrDefault();
             if (pendingButtonCallback == default) return null;
 
-            pendingButtonCallback.callback?.Invoke(arg.User, pendingButtonCallback.param);
+            pendingButtonCallback.callback?.Invoke(arg);
 
             pendingButtonCallbacks.Remove(pendingButtonCallback);
 
             return null;
         }
 
-        public static ComponentBuilder WithCallbackButton(this ComponentBuilder builder, Action<IUser, object> callback, string label = null, ButtonStyle style = ButtonStyle.Primary, IEmote emote = null, string url = null, bool disabled = false, int row = 0, object callbackParam = null)
+        public static ComponentBuilder WithCallbackButton(this ComponentBuilder builder, Action<SocketMessageComponent> callback, string label = null, ButtonStyle style = ButtonStyle.Primary, IEmote emote = null, string url = null, bool disabled = false, int row = 0)
         {
-            string customId = "btn-" + StringUtils.Random(18);
+            string customId = "btn-" + StringUtils.RandomString(18);
 
             builder.WithButton(label, customId, style, emote, url, disabled, row);
-            pendingButtonCallbacks.Add(new PendingButtonCallback(callback, customId, callbackParam));
+            pendingButtonCallbacks.Add(new PendingButtonCallback(callback, customId));
 
             return builder;
         }
 
         class PendingButtonCallback
         {
-            public PendingButtonCallback(Action<IUser, object> callback, string customId, object param)
+            public PendingButtonCallback(Action<SocketMessageComponent> callback, string customId)
             {
                 this.callback = callback;
                 this.customId = customId;
-                this.param = param;
             }
 
-            public Action<IUser, object> callback;
+            public Action<SocketMessageComponent> callback;
             public string customId;
-            public object param;
         }
     }
 }
