@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 
 namespace GamesBot.Games
 {
@@ -44,8 +43,78 @@ namespace GamesBot.Games
 
         public async void PlacePlayerShip(SocketInteraction interaction, Vector2 pos, ShipOrientation orientation)
         {
-            var path = ImageUtils.GenerateBattleshipGameBoard(new Vector2[] {pos }, Array.Empty<Vector2>());
-            await interaction.RespondWithFileAsync(path);
+            Player player = interaction.User.Id == hostPlayer.user.Id ? hostPlayer : otherPlayer;
+
+            if (player.availableShips == null || player.availableShips.Count == 0)
+            {
+                await interaction.RespondAsync("You already placed all your ships!", ephemeral: true);
+                return;
+            }
+
+            if (orientation == ShipOrientation.Horizontal)
+            {
+                List<Vector2> blocks = new();
+
+                for (int i = 0; i < player.currentPlacingShip.length; i++)
+                {
+                    Vector2 block = new(pos.x + i, pos.y);
+
+                    if (block.x > 10 || block.y > 10 || HasShipInBlock(player, block))
+                    {
+                        await interaction.RespondAsync("This position is not valid!", ephemeral: true);
+                        return;
+                    }
+
+                    blocks.Add(block);
+                }
+
+                player.currentPlacingShip.blocks = blocks.ToArray();
+            }
+            else
+            {
+                List<Vector2> blocks = new();
+
+                for (int i = 0; i < player.currentPlacingShip.length; i++)
+                {
+                    Vector2 block = new(pos.x, pos.y + i);
+
+                    if (block.x > 10 || block.y > 10 || HasShipInBlock(player, block))
+                    {
+                        await interaction.RespondAsync("This position is not valid!", ephemeral: true);
+                        return;
+                    }
+
+                    blocks.Add(block);
+                }
+
+                player.currentPlacingShip.blocks = blocks.ToArray();
+            }
+
+            player.ships.Add(player.availableShips[0]);
+            player.availableShips.RemoveAt(0);
+            player.currentPlacingShip = player.availableShips.Count != 0 ? player.availableShips[0] : null;
+
+            Vector2[] shipBlocks = Array.Empty<Vector2>();
+            foreach (var ship in otherPlayer.ships)
+                shipBlocks = shipBlocks.Concat(ship.blocks).ToArray();
+
+            string reply = player.currentPlacingShip == null ? "You have finished placing your ships, wait for your opponent."
+                : $"Please place your ship.The length is { player.currentPlacingShip.length }.\nEx.: / battleship place A3 Horizontal";
+
+            var path = ImageUtils.GenerateBattleshipGameBoard(shipBlocks, Array.Empty<Vector2>());
+            await interaction.RespondWithFileAsync(path,
+                text: reply, ephemeral: true);
+        }
+
+        static bool HasShipInBlock(Player player, Vector2 pos)
+        {
+            foreach (var ship in player.ships)
+            {
+                var block = ship.blocks.Where(x => x.x == pos.x && x.y == pos.y).FirstOrDefault();
+                if (block != default) return true;
+            }
+
+            return false;
         }
 
         static Ship[] CreateAvailableShips()

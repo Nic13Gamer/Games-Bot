@@ -26,7 +26,7 @@ namespace GamesBot
 
                 }, "Accept", ButtonStyle.Success);
 
-            await RespondAsync($"{mention.Mention} has received a invite to play battleship from {Context.User.Mention}\nClick the button below to accept and start playing!",
+            await RespondAsync($"{mention.Mention} has received an invite to play battleship from {Context.User.Mention}\nClick the button below to accept and start playing!",
                 components: components.Build());
         }
 
