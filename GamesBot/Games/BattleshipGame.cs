@@ -95,7 +95,7 @@ namespace GamesBot.Games
             player.currentPlacingShip = player.availableShips.Count != 0 ? player.availableShips[0] : null;
 
             Vector2[] shipBlocks = Array.Empty<Vector2>();
-            foreach (var ship in otherPlayer.ships)
+            foreach (var ship in player.ships)
                 shipBlocks = shipBlocks.Concat(ship.blocks).ToArray();
 
             string reply = player.currentPlacingShip == null ? "You have finished placing your ships, wait for your opponent."
