@@ -40,6 +40,11 @@ namespace GamesBot
                 await RespondAsync("You are not currently playing a battleship game.", ephemeral: true);
                 return;
             }
+            if(game.gamePhase != BattleshipGame.GamePhase.Placing)
+            {
+                await RespondAsync("Game is not in placing ships phase.", ephemeral: true);
+                return;
+            }
 
             position = position.Trim();
 
@@ -54,8 +59,64 @@ namespace GamesBot
                 await RespondAsync(e.Message, ephemeral: true);
             }
 
-            // TODO: check if the game is in the place ships phase;
             game.PlacePlayerShip(Context.Interaction, pos, orientation);
+        }
+
+        [SlashCommand("attack", "Attack your opponent")]
+        public async Task AttackCommand(string position)
+        {
+            BattleshipGame game = GameManager.runningGames.Where(x => ((BattleshipGame)x).hostPlayer.user.Id == Context.User.Id ||
+            ((BattleshipGame)x).otherPlayer.user.Id == Context.User.Id).FirstOrDefault() as BattleshipGame;
+            if (game == default)
+            {
+                await RespondAsync("You are not currently playing a battleship game.", ephemeral: true);
+                return;
+            }
+            if (game.gamePhase != BattleshipGame.GamePhase.Attacking)
+            {
+                await RespondAsync("Game is not in attacking ships phase.", ephemeral: true);
+                return;
+            }
+
+            position = position.Trim();
+
+            Vector2 pos = new();
+            try
+            {
+                pos.x = position.Length == 3 ? 10 : int.Parse(position[1].ToString());
+                pos.y = char.ToUpper(position[0]) - 64;
+            }
+            catch (System.Exception e)
+            {
+                await RespondAsync(e.Message, ephemeral: true);
+            }
+
+            game.AttackOpponentShip(Context.Interaction, pos);
+        }
+
+        // only ment to debug
+        [SlashCommand("auto-finish", "debug command")]
+        public async Task AutoFinishCommand()
+        {
+            BattleshipGame game = GameManager.runningGames.Where(x => ((BattleshipGame)x).hostPlayer.user.Id == Context.User.Id ||
+            ((BattleshipGame)x).otherPlayer.user.Id == Context.User.Id).FirstOrDefault() as BattleshipGame;
+            if (game == default)
+            {
+                await RespondAsync("You are not currently playing a battleship game.", ephemeral: true);
+                return;
+            }
+            if (game.gamePhase != BattleshipGame.GamePhase.Placing)
+            {
+                await RespondAsync("Game is not in placing ships phase.", ephemeral: true);
+                return;
+            }
+
+            for (int i = 0; i < 5; i++)
+            {
+                Vector2 pos = new(i + 1, 1);
+
+                game.AutoFinishPlayerShips(Context.Interaction, pos, i == 4);
+            }
         }
     }
 }
