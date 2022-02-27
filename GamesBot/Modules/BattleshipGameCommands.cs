@@ -12,9 +12,25 @@ namespace GamesBot
         [SlashCommand("play", "Invites another user to play battleship")]
         public async Task PlayCommand([Summary("user")] IGuildUser mention)
         {
+            BattleshipGame game = GameManager.runningGames.Where(x => ((BattleshipGame)x).hostPlayer.user.Id == Context.User.Id ||
+               ((BattleshipGame)x).otherPlayer.user.Id == Context.User.Id).FirstOrDefault() as BattleshipGame;
+            if (game != default)
+            {
+                await RespondAsync("You are already playing a battleship game.", ephemeral: true);
+                return;
+            }
+
             var components = new ComponentBuilder()
                 .WithCallbackButton(async (interaction) =>
                 {
+                    BattleshipGame game = GameManager.runningGames.Where(x => ((BattleshipGame)x).hostPlayer.user.Id == interaction.User.Id ||
+                    ((BattleshipGame)x).otherPlayer.user.Id == interaction.User.Id).FirstOrDefault() as BattleshipGame;
+                    if (game != default)
+                    {
+                        await interaction.RespondAsync("You are already playing a battleship game.", ephemeral: true);
+                        return;
+                    }
+
                     var hostUser = Context.User as IUser;
                     var otherUser = interaction.User as IUser;
 
@@ -22,11 +38,11 @@ namespace GamesBot
 
                     await interaction.RespondAsync($"{otherUser.Mention} battleship game with {hostUser.Mention} will begin soon!");
 
-                    var game = new BattleshipGame(hostUser, otherUser, Context.Interaction, interaction);
+                    var newGame = new BattleshipGame(hostUser, otherUser, Context.Interaction, interaction);
 
                 }, "Accept", ButtonStyle.Success);
 
-            await RespondAsync($"{mention.Mention} has received an invite to play battleship from {Context.User.Mention}\nClick the button below to accept and start playing!",
+            await RespondAsync($"{mention.Mention} has received an invite to play battleship with {Context.User.Mention}\nClick the button below to accept and start playing!",
                 components: components.Build());
         }
 

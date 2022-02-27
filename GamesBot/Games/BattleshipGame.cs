@@ -302,6 +302,7 @@ namespace GamesBot.Games
             return availableShips.ToArray();
         }
 
+
         public class Player
         {
             public Player(IUser user, SocketInteraction interaction)
@@ -324,7 +325,6 @@ namespace GamesBot.Games
         {
             public Vector2[] blocks;
             public int length;
-            public bool isDestroyed;
 
             // TODO: image, etc.
         }
